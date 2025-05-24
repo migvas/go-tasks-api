@@ -31,5 +31,7 @@ func LoadConfig() (*Config, error) {
 		port = "8080" // Default port
 	}
 
+	cfg.Port = port
+
 	return cfg, err
 }
