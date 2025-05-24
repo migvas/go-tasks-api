@@ -11,7 +11,6 @@ import (
 // It handles potential JSON encoding errors internally.
 func JSONResponse(w http.ResponseWriter, data interface{}, statusCode int) {
 	responseBody, err := json.Marshal(data) // Use json.Marshal to get bytes
-	log.Printf("Data %v", responseBody)
 	if err != nil {
 		// Log the encoding error. This is a server-side problem.
 		log.Printf("jsonutil: Failed to marshal JSON response data: %v for data: %+v", err, data)

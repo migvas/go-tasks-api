@@ -2,7 +2,8 @@ package services
 
 import (
 	"errors"
-	"fmt"
+
+	"github.com/migvas/go-tasks-api/internal/models"
 )
 
 var (
@@ -11,7 +12,7 @@ var (
 )
 
 type TaskServices interface {
-	GetTask(id int) (*MockTask, error)
+	GetTask(id int) (*models.Task, error)
 	// CreateTask(title, description, dueDate, email string) error
 	// UpdateTask(id int, name, email string) error
 	// CompleteTask(id int) error
@@ -21,19 +22,14 @@ type TaskServices interface {
 
 type TaskService struct{}
 
-type MockTask struct {
-	ID int `json:"id"`
-}
-
 func NewTaskService() TaskServices {
 	return &TaskService{}
 }
 
-func (s *TaskService) GetTask(id int) (*MockTask, error) {
+func (s *TaskService) GetTask(id int) (*models.Task, error) {
 	if id <= 0 {
 		return nil, ErrInvalidTaskData
 	}
-	fmt.Printf("This is task with id %d\n", id)
-	task := &MockTask{ID: id}
+	task := &models.Task{ID: int64(id)}
 	return task, nil
 }
