@@ -39,7 +39,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/migvas/go-tasks-api.git](https://github.com/migvas/go-tasks-api.git)
+    git clone https://github.com/migvas/go-tasks-api.git
     cd go-tasks-api
     ```
 2.  **Install dependencies:**
