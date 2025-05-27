@@ -14,7 +14,7 @@ var (
 )
 
 type TaskServices interface {
-	GetTask(id int) (*models.Task, error)
+	GetTask(id int) (*TaskResponse, error)
 	// CreateTask(title, description, dueDate, email string) error
 	// UpdateTask(id int, name, email string) error
 	// CompleteTask(id int) error
@@ -38,7 +38,7 @@ type TaskResponse struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-func NewTaskService(db *gorm.DB) *TaskServices {
+func NewTaskService(db *gorm.DB) TaskServices {
 	return &TaskService{db: db}
 }
 
