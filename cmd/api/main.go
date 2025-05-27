@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/migvas/go-tasks-api/config"
+	"github.com/migvas/go-tasks-api/database"
 	"github.com/migvas/go-tasks-api/internal/api"
 	"github.com/migvas/go-tasks-api/internal/services"
 )
@@ -17,14 +18,10 @@ func main() {
 		log.Fatalf("Error loading configuration: %v", err)
 	}
 
-	// db, err := database.NewDB(cfg.DatabaseURL)
-	// if err != nil {
-	// 	log.Fatalf("Error connecting to database: %v", err)
-	// }
-	// defer db.Close()
+	db := database.InitDB(cfg.DSN)
 
 	// Initialize Services (Business Logic Layer)
-	taskService := services.NewTaskService()
+	taskService := services.NewTaskService(db)
 	// Initialize API Handlers (HTTP Layer)
 	apiHandlers := api.NewAPIHandlers(taskService)
 

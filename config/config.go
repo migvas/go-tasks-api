@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	Port string
+	DSN  string
 }
 
 func LoadConfig() (*Config, error) {
@@ -32,6 +33,6 @@ func LoadConfig() (*Config, error) {
 	}
 
 	cfg.Port = port
-
+	cfg.DSN = os.Getenv("DSN")
 	return cfg, err
 }
