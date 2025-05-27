@@ -1,11 +1,18 @@
 package models
 
 import (
-	"time"
+	"gorm.io/gorm"
 )
 
 type Task struct {
-	ID        int64     `db:"id" json:"id"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+	gorm.Model
+	Title       string
+	Description string
+	Priority    uint
+	AssigneeID  uint // Foreign key for assigned User
+	Assignee    User `gorm:"foreignKey:AssigneeID"`
+	CreatedByID uint // Foreign key for User who created the task
+	CreatedBy   User `gorm:"foreignKey:CreatedByID"`
+	UpdatedById uint // Foreign key for User who updated the task
+	UpdatedBy   User `gorm:"foreignKey:UpdatedById"`
 }
