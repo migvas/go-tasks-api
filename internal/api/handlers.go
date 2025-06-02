@@ -1,8 +1,11 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -38,4 +41,29 @@ func (h *APIHandlers) GetTask(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Printf("Task: %v\n", task)
 	jsonutil.JSONResponse(w, task, http.StatusOK)
+}
+
+func (h *APIHandlers) CreateUser(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Content-Type") != "application/json" {
+		http.Error(w, "Content-Type must be application/json", http.StatusUnsupportedMediaType)
+		return
+	}
+
+	body, err := ioutil.ReadAll(r.Body) // For Go 1.16+, use io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		log.Printf("Error reading JSON body: %v", err)
+		return
+	}
+	defer r.Body.Close()
+
+	var user services.UserInput
+
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		http.Error(w, "Error unmarshalling JSON", http.StatusBadRequest)
+		log.Printf("Error unmarshalling JSON: %v", err)
+		return
+	}
+
 }

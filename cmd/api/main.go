@@ -22,8 +22,9 @@ func main() {
 
 	// Initialize Services (Business Logic Layer)
 	taskService := services.NewTaskService(db)
+	userService := services.NewUserService(db)
 	// Initialize API Handlers (HTTP Layer)
-	apiHandlers := api.NewAPIHandlers(taskService)
+	apiHandlers := api.NewAPIHandlers(taskService, userService)
 
 	// Create a new ServeMux (router)
 	mux := http.NewServeMux()

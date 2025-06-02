@@ -2,20 +2,26 @@ package services
 
 import (
 	"errors"
+	"log"
+	"net/http"
 	"time"
 
+	verifier "github.com/AfterShip/email-verifier"
 	"github.com/migvas/go-tasks-api/internal/models"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 var (
 	ErrUserNotFound    = errors.New("service: user not found")
 	ErrInvalidUserData = errors.New("service: invalid user data provided")
+	ErrInvalidEmail    = errors.New("service: invalid email")
+	ErrCreateUser      = errors.New("service: error creating user")
 )
 
 type UserServices interface {
 	GetUser(id int) (*UserResponse, error)
-	// CreateTask(title, description, dueDate, email string) error
+	CreateUser(user *UserInput) (*UserResponse, error)
 	// UpdateTask(id int, name, email string) error
 	// CompleteTask(id int) error
 	// DeleteTask(id int) error
@@ -24,6 +30,12 @@ type UserServices interface {
 
 type UserService struct {
 	db *gorm.DB
+}
+
+type UserInput struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type UserResponse struct {
@@ -70,4 +82,48 @@ func (s *UserService) GetUser(id int) (*UserResponse, error) {
 	}
 	userResponse := ConvertUserToResponse(&user)
 	return userResponse, nil
+}
+
+func (s *UserService) CreateUser(user *UserInput) (*UserResponse, error) {
+	// Check payload
+
+	// Verify email
+	v := verifier.NewVerifier()
+	ret1, err := v.Verify(user.Email)
+
+	if err != nil {
+		log.Printf("Error validating email: %v", err)
+		return nil, ErrCreateUser
+	} else {
+		if !ret1.Syntax.Valid {
+			return nil, ErrInvalidEmail
+		}
+	}
+
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Printf("Error hashing password: %v", err)
+		return nil, ErrCreateUser
+	}
+
+	newUser := models.User{
+		Name:     user.Name,
+		Email:    user.Email,
+		Password: string(hashedPassword),
+	}
+
+	result := s.db.Create(&newUser)
+
+	if result.Error != nil {
+		if gorm.Is(result.Error, gorm.ErrDuplicatedKey) {
+			http.Error(w, "Email address already registered", http.StatusConflict)
+			return
+		}
+
+		log.Printf("Database error during user creation: %v", result.Error)
+		http.Error(w, "Failed to register user", http.StatusInternalServerError)
+		return
+	}
+
 }
