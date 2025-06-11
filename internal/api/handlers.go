@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -39,8 +38,38 @@ func (h *APIHandlers) GetTask(w http.ResponseWriter, r *http.Request) {
 		jsonutil.ErrorResponse(w, "Failed to retrieve task", http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("Task: %v\n", task)
+
 	jsonutil.JSONResponse(w, task, http.StatusOK)
+}
+
+func (h *APIHandlers) GetUser(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id") // Go 1.22+
+	if idStr == "" {
+		jsonutil.ErrorResponse(w, "User ID is required", http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		jsonutil.ErrorResponse(w, "Invalid user ID format", http.StatusBadRequest)
+		return
+	}
+
+	user, err := h.UserServices.GetUser(id) // Call the service layer
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotFound) {
+			jsonutil.ErrorResponse(w, "User not found", http.StatusNotFound)
+			return
+		}
+		if errors.Is(err, services.ErrInvalidUserData) {
+			jsonutil.ErrorResponse(w, "Invalid user ID", http.StatusBadRequest)
+			return
+		}
+		jsonutil.ErrorResponse(w, "Failed to retrieve user", http.StatusInternalServerError)
+		return
+	}
+
+	jsonutil.JSONResponse(w, user, http.StatusOK)
 }
 
 func (h *APIHandlers) CreateUser(w http.ResponseWriter, r *http.Request) {
