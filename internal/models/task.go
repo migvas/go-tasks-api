@@ -9,6 +9,7 @@ type Task struct {
 	Title       string
 	Description string
 	Priority    uint
+	Completed   bool
 	AssigneeID  uint // Foreign key for assigned User
 	Assignee    User `gorm:"foreignKey:AssigneeID"`
 	CreatedByID uint // Foreign key for User who created the task

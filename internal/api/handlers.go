@@ -42,6 +42,44 @@ func (h *APIHandlers) GetTask(w http.ResponseWriter, r *http.Request) {
 	jsonutil.JSONResponse(w, task, http.StatusOK)
 }
 
+func (h *APIHandlers) CreateTask(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Content-Type") != "application/json" {
+		http.Error(w, "Content-Type must be application/json", http.StatusUnsupportedMediaType)
+		return
+	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		log.Printf("Error reading JSON body: %v", err)
+		return
+	}
+	defer r.Body.Close()
+
+	var task services.TaskInput
+
+	err = json.Unmarshal(body, &task)
+	if err != nil {
+		http.Error(w, "Error unmarshalling JSON", http.StatusBadRequest)
+		log.Printf("Error unmarshalling JSON: %v", err)
+		return
+	}
+
+	taskResponse, err := h.TaskServices.CreateTask(&task)
+
+	if err != nil {
+		if errors.Is(err, services.ErrInvalidUser) {
+			jsonutil.ErrorResponse(w, "Invalid user", http.StatusBadRequest)
+			return
+		}
+		if errors.Is(err, services.ErrCreateTask) {
+			jsonutil.ErrorResponse(w, "Error creating task", http.StatusInternalServerError)
+			return
+		}
+	}
+	jsonutil.JSONResponse(w, taskResponse, http.StatusOK)
+}
+
 func (h *APIHandlers) GetUser(w http.ResponseWriter, r *http.Request) {
 	idStr := r.PathValue("id") // Go 1.22+
 	if idStr == "" {
