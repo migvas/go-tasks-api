@@ -3,7 +3,6 @@ package services
 import (
 	"errors"
 	"log"
-	"net/http"
 	"time"
 
 	verifier "github.com/AfterShip/email-verifier"
@@ -116,14 +115,10 @@ func (s *UserService) CreateUser(user *UserInput) (*UserResponse, error) {
 	result := s.db.Create(&newUser)
 
 	if result.Error != nil {
-		if gorm.Is(result.Error, gorm.ErrDuplicatedKey) {
-			http.Error(w, "Email address already registered", http.StatusConflict)
-			return
-		}
-
-		log.Printf("Database error during user creation: %v", result.Error)
-		http.Error(w, "Failed to register user", http.StatusInternalServerError)
-		return
+		log.Printf("Error creating new user: %v", result.Error)
+		return nil, ErrCreateUser
 	}
 
+	userResponse := ConvertUserToResponse(&newUser)
+	return userResponse, nil
 }

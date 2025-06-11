@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -49,7 +49,7 @@ func (h *APIHandlers) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body) // For Go 1.16+, use io.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Error reading request body", http.StatusInternalServerError)
 		log.Printf("Error reading JSON body: %v", err)
@@ -66,4 +66,17 @@ func (h *APIHandlers) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userResponse, err := h.UserServices.CreateUser(&user)
+
+	if err != nil {
+		if errors.Is(err, services.ErrInvalidEmail) {
+			jsonutil.ErrorResponse(w, "Invalid email", http.StatusBadRequest)
+			return
+		}
+		if errors.Is(err, services.ErrCreateUser) {
+			jsonutil.ErrorResponse(w, "Error creating user", http.StatusInternalServerError)
+			return
+		}
+	}
+	jsonutil.JSONResponse(w, userResponse, http.StatusOK)
 }
