@@ -84,7 +84,6 @@ func (s *UserService) GetUser(id int) (*UserResponse, error) {
 }
 
 func (s *UserService) CreateUser(user *UserInput) (*UserResponse, error) {
-	// Check payload
 
 	// Verify email
 	v := verifier.NewVerifier()
@@ -110,6 +109,7 @@ func (s *UserService) CreateUser(user *UserInput) (*UserResponse, error) {
 		Name:     user.Name,
 		Email:    user.Email,
 		Password: string(hashedPassword),
+		Active:   true,
 	}
 
 	result := s.db.Create(&newUser)
